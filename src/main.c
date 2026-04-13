@@ -23,8 +23,8 @@ int main() {
         return -1;
     }
     adxl_interrupts(fd);// initializing interrupts
-//    RTC_Time_t startTime = {0, 45, 16, 1, 13, 4, 2026}; // Sec, Min, Hour, Day, Date, Month, Year
-//    DS3231_set_time(&startTime);  now the system has been synced no need for it for now
+    RTC_Time_t startTime = {0, 45, 16, 1, 13, 4, 2026}; // Sec, Min, Hour, Day, Date, Month, Year
+    DS3231_set_time(&startTime);  //now the system has been synced no need for it for now
     printf("RTC Time has been synced!\n");
 
 //---------------------------gpio
@@ -43,6 +43,7 @@ int main() {
         if(gpiod_line_request_rising_edge_events(line,"Activity")<0) {
             perror("Request events failed");
             gpiod_chip_close(chip);
+            return -1;
         }
 //..................................
     RTC_Time_t current_time;
@@ -67,6 +68,8 @@ int main() {
                     current_time.date, current_time.month, current_time.year, current_time.hours, current_time.minutes, current_time.seconds, x, y, z);
 
             interrupt_clear();
+            //wait 0.5 seconds before another log
+            usleep(500000);
         } else if(result ==0) {
             printf("Waiting for the activity");
             fflush(stdout);

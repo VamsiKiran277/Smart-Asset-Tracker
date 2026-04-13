@@ -50,9 +50,13 @@ int adxl_read(float *x,float *y,float *z) {
         return -1;
     }
     //shifting msb and then OR with lsb
-    *x = (float)(buffer[1]<<8 | buffer[0]) * resolution;
-    *y = (float)(buffer[3]<<8 | buffer[2]) * resolution;
-    *z = (float)(buffer[5]<<8 | buffer[4]) * resolution;
+    int16_t raw_x = (int16_t)(buffer[1]<<8 | buffer[0]);
+    int16_t raw_y = (int16_t)(buffer[3]<<8 | buffer[2]);
+    int16_t raw_z = (int16_t)(buffer[5]<<8 | buffer[4]);
+
+    *x = (float)raw_x * resolution;
+    *y = (float)raw_y * resolution;
+    *z = (float)raw_z * resolution;
     return 0;
 }
 
@@ -60,7 +64,9 @@ int adxl_interrupts(int fd) {
     //set the threshold for the activity
     //threshold = register value * scale factor == 32*62.5mg = 2000mg = 2.0g
     //hex value for 32 is 0x20
-    I2Cwrite(fd,ADXL_BASE_ADDRESS,THRESH_ACT,0x08); //changed it from 0x20 to 0x08
+    I2Cwrite(fd,ADXL_BASE_ADDRESS,THRESH_ACT,0x20);
+    //enabling x,y,z for direction
+    I2Cwrite(fd, ADXL_BASE_ADDRESS, 0x27, 0x70);
     uint8_t value;
     //map activity to INT1(which will be set if the value there is zero);
     I2Cread(fd,ADXL_BASE_ADDRESS,INT_MAP,&value);

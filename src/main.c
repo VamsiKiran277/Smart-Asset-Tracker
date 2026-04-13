@@ -63,10 +63,17 @@ int main() {
             adxl_read(&x, &y, &z);         // Get G-forces
             DS3231_get_time(&current_time);         // Get Timestamp
 
+            //ACTUATOR LOG FILE to save the file
+            FILE *logfile = fopen("impact_history.csv", "a");
             // Professional Log Output
-            printf("[%02d-%02d-%04d %02d:%02d:%02d] IMPACT DETECTED! X:%.2fg Y:%.2fg Z:%.2fg\n",
-                    current_time.date, current_time.month, current_time.year, current_time.hours, current_time.minutes, current_time.seconds, x, y, z);
-
+            if (logfile != NULL) {
+                fprintf(logfile, "%02d/%02d/%04d,%02d:%02d:%02d,%.2f,%.2f,%.2f\n",
+                        current_time.date, current_time.month, current_time.year,
+                        current_time.hours, current_time.minutes, current_time.seconds, x, y, z);
+                fclose(logfile);
+            }
+            //TO show the user
+            printf("\n[LOGGED] IMPACT DETECTED! X:%.2fg Y:%.2fg Z:%.2fg\n", x, y, z);
             interrupt_clear();
             //wait 0.5 seconds before another log
             usleep(500000);

@@ -5,7 +5,7 @@
 #include "DS3231.h"
 
 //function definitions
-void mqtt_init();
+int mqtt_init();
 void mqtt_publish(RTC_Time_t time, float x,float y, float z);
 
 #endif

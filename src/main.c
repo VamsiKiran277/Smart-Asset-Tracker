@@ -3,6 +3,7 @@
 #include "i2c_master.h"
 #include "adxl.h"
 #include "DS3231.h"
+#include "mqtt_client.h"
 #include <gpiod.h>
 
 struct gpiod_chip *chip;
@@ -13,6 +14,12 @@ struct gpiod_line_event event;
 int main() {
     fd = I2C_init(); //initializing i2c
     if(fd < 0) return -1;
+    //mqtt initialization
+    if (mqtt_init() != 0) {
+        printf("CRITICAL ERROR: MQTT could not connect. Check credentials \n");
+        return -1; // Uncomment this if you want to stop the app on failure
+    }
+
     //initializing adxl
     if(adxl_init() < 0) {
         printf("adxl failed to initialize");
@@ -62,6 +69,7 @@ int main() {
             //------------------------
             adxl_read(&x, &y, &z);         // Get G-forces
             DS3231_get_time(&current_time);         // Get Timestamp
+            mqtt_publish(current_time, x, y, z); //publish the data
 
             //ACTUATOR LOG FILE to save the file
             FILE *logfile = fopen("impact_history.csv", "a");

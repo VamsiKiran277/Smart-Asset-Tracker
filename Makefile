@@ -8,48 +8,48 @@ CFLAGS = -Wall -Iinclude
 
 # Linker Flags
 # -lgpiod: link the GPIO library
-# -lm: link the math library (required if you use sqrt or floats)
-LDFLAGS = -lgpiod -lm
+# -lpaho-mqtt3cs: Paho MQTT C library with SSL support (for HiveMQ)
+# -lm: link the math library
+LDFLAGS = -lgpiod -lm -lpaho-mqtt3cs
 
 # Directories
 SRC_DIR = src
 DRV_DIR = drivers
 OBJ_DIR = obj
 
-# Source files
+# Source files - Add new .c files here only
 SRCS = $(SRC_DIR)/main.c \
        $(DRV_DIR)/adxl.c \
        $(DRV_DIR)/DS3231.c \
-       $(DRV_DIR)/i2c_master.c
+       $(DRV_DIR)/i2c_master.c \
+       $(DRV_DIR)/mqtt_client.c
 
-# Object files (transform .c paths to obj/.o paths)
-OBJS = $(OBJ_DIR)/main.o \
-       $(OBJ_DIR)/adxl.o \
-       $(OBJ_DIR)/DS3231.o \
-       $(OBJ_DIR)/i2c_master.o
+# Automated Object List
+# This takes the filenames from SRCS, removes the path, and adds obj/ prefix
+OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
+
+# VPATH tells 'make' to search these directories for .c source files
+VPATH = $(SRC_DIR):$(DRV_DIR)
 
 # Target executable
 TARGET = firmware_app
 
-# Default rule: build the target
+# Default rule
 all: $(OBJ_DIR) $(TARGET)
 
-# Rule to create the object directory if it doesn't exist
+# Rule to create the object directory
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-# Linking stage: Combine all .o files into the final executable
+# Linking stage
 $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
-# Compilation stage: Build object files from .c files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+# Compilation stage - Generic rule for all .o files
+$(OBJ_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.o: $(DRV_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Clean rule: Remove objects and executable
+# Clean rule
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
 

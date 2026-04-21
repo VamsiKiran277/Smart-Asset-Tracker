@@ -1,0 +1,11 @@
+# Build folders
+build/
+*-build/
+
+# Sensitive Info
+.env
+secrets.h
+
+# IDE files
+.vscode/
+*.user
